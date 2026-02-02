@@ -1,20 +1,46 @@
-from main import get_client
+"""
+02 - Fetch Information from a Speckle Model
 
+This script demonstrates how to fetch and explore data from
+an existing Speckle model/version.
+
+Use your personal tower model from session2 (project "cw-yourname")
+https://app.speckle.systems/projects/YOUR_PROJECT_ID/models/YOUR_MODEL_ID
+"""
+
+from main import get_client
+from specklepy.transports.server import ServerTransport
+from specklepy.api import operations
+
+
+# TODO: Replace with your project and model IDs
 PROJECT_ID = "128262a20c"
-SOURCE_MODEL_NAME = "a1014e4b32"
-TARGET_MODEL_NAME = "96b3069344"
+MODEL_ID = "96b3069344"
+
 
 def main():
+    # Authenticate
     client = get_client()
 
-    # Tüm modelleri al
-    models = client.model.get_models(PROJECT_ID)
+    # Get the model (branch) info
+    model = client.model.get(MODEL_ID, PROJECT_ID)
+    print(f"✓ Model: {model.name}")
 
-    source = next(m for m in models.items if m.name == SOURCE_MODEL_NAME)
+    # Get the latest version (commit)
+    versions = client.version.get_versions(MODEL_ID, PROJECT_ID, limit=1)
+    latest_version = versions.items[0]
+    print(f"  Latest version: {latest_version.id}")
+    print(f"  Message: {latest_version.message}")
 
-    # Latest version
-    versions = client.version.get_versions(source.id, PROJECT_ID, limit=1)
-    latest = versions.items[0]
+    # Receive the data from Speckle
+    transport = ServerTransport(client=client, stream_id=PROJECT_ID)
+    data = operations.receive(latest_version.referenced_object, transport)
 
-    print("✓ Source model found")
-    print("  Commit:", latest.id)
+    # Print element names
+    elements = getattr(data, "elements", [])
+    for element in elements:
+        print(element.name)
+
+
+if __name__ == "__main__":
+    main()
