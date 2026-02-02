@@ -17,7 +17,7 @@ from specklepy.objects.base import Base
 
 # TODO: Replace with your project and model IDs
 PROJECT_ID = "128262a20c"
-MODEL_ID = "96b3069344"
+MODEL_ID = "e09d9dbeca"
 
 
 def query_objects_graphql(client, project_id: str, version_id: str) -> dict:
